@@ -1,27 +1,11 @@
-Copyright (c) 2026 Piyush Thakur. All rights reserved.
+MIT License
 
-This repository is provided for educational and reference purposes only.
+Copyright (c) 2026 Piyush Dhami
 
-PERMITTED:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software.
 
-* You may view and download the code for personal learning.
-* You may fork this repository on GitHub.
-* You may submit issues, suggestions, and pull requests.
-
-RESTRICTIONS:
-
-* You may NOT use this code in any personal, academic, or commercial project.
-* You may NOT publish, distribute, or re-upload this code (in whole or in part).
-* You may NOT use this code to build or showcase your own applications.
-* You may NOT claim this code as your own work.
-
-ATTRIBUTION:
-If you are explicitly permitted to share any part of this code, you must give clear credit at the beginning:
-
-"Original code by Piyush Thakur (2026)"
-
-NO LICENSE:
-Only the permissions listed above are allowed. Any other use is strictly prohibited.
-
-ENFORCEMENT:
-If you violate these terms, the copyright holder may take appropriate legal action.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
