@@ -543,7 +543,7 @@ RESTRICTIONS:
 ATTRIBUTION:
   If you are explicitly permitted to share any part of this code, you must
   give clear credit at the beginning:
-  "Original code by Piyush Thakur (2026)"
+  "Original code by Piyush Dhami (2026)"
 
 NO LICENSE:
   Only the permissions listed above are allowed.
