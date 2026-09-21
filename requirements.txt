@@ -1,0 +1,28 @@
+# ========================================
+# SmartWaste AI - Combined Requirements
+# ========================================
+
+# --- Module 1: Waste Classification API (FastAPI) ---
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+
+# --- Module 2: Hand Detection (MediaPipe) ---
+mediapipe>=0.10.0
+
+# --- AI/ML ---
+ultralytics>=8.1.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# --- Image Processing ---
+opencv-python>=4.8.0
+Pillow>=10.1.0
+
+# --- Gemini API (text tips only) ---
+google-generativeai>=0.3.2
+
+# --- Utilities ---
+numpy>=1.24.0
+python-dotenv>=1.0.0
+jinja2>=3.1.0

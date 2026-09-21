@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Training data (too large for GitHub)
+training/dataset/
+training/runs/
+
+# Model weights (large - use git lfs or download separately)
+models/*.pt
+*.pt.backup
+
+# Evidence (auto-generated at runtime)
+evidence/images/
+evidence/videos/
+evidence/logs/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.temp

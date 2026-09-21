@@ -1,0 +1,105 @@
+q<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident {{ incident.id }} - Littering Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🗑️ Littering Detection System</div>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/incidents" class="active">Incidents</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="header">
+            <a href="/incidents" class="back-link">← Back to Incidents</a>
+            <h1>🔍 Incident Details</h1>
+            <p class="subtitle">{{ incident.id }}</p>
+        </header>
+
+        <div class="detail-grid">
+            <!-- Metadata Panel -->
+            <div class="metadata-panel">
+                <h2>📋 Incident Information</h2>
+                <div class="metadata-list">
+                    <div class="metadata-item">
+                        <span class="meta-label">Incident ID</span>
+                        <span class="meta-value">{{ incident.id }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Date</span>
+                        <span class="meta-value">{{ incident.date }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Time</span>
+                        <span class="meta-value">{{ incident.time }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Timestamp</span>
+                        <span class="meta-value">{{ incident.timestamp }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Status</span>
+                        <span class="meta-value status-confirmed">CONFIRMED</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Evidence Type</span>
+                        <span class="meta-value">
+                            {% if incident.image_exists %}Screenshot{% endif %}
+                            {% if incident.image_exists and incident.video_exists %} + {% endif %}
+                            {% if incident.video_exists %}Video{% endif %}
+                        </span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="meta-label">Storage</span>
+                        <span class="meta-value">Local (evidence/)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evidence Section -->
+            <div class="evidence-panel">
+                <!-- Screenshot -->
+                {% if incident.image_exists %}
+                <div class="evidence-section">
+                    <h2>📷 Screenshot Evidence</h2>
+                    <div class="evidence-viewer">
+                        <img src="{{ incident.image }}" alt="Evidence Screenshot" class="evidence-image">
+                    </div>
+                    <div class="evidence-actions">
+                        <a href="{{ incident.image }}" class="btn btn-secondary" download>⬇️ Download Image</a>
+                        <a href="{{ incident.image }}" class="btn btn-outline" target="_blank">🔗 Open Full Size</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Video -->
+                {% if incident.video_exists %}
+                <div class="evidence-section">
+                    <h2>🎥 Video Evidence</h2>
+                    <div class="evidence-viewer">
+                        <video controls class="evidence-video">
+                            <source src="{{ incident.video }}" type="video/mp4">
+                            Your browser does not support video playback.
+                        </video>
+                    </div>
+                    <p class="video-note">⚠️ Video includes 5 seconds before and after the incident</p>
+                    <div class="evidence-actions">
+                        <a href="{{ incident.video }}" class="btn btn-secondary" download>⬇️ Download Video</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Smart Littering Detection System • Evidence Dashboard • Privacy-Safe</p>
+    </footer>
+</body>
+</html>

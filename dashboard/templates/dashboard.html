@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Littering Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 200, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(120, 0, 255, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        /* Grid Lines Effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+        
+        .navbar {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 22px;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .navbar nav {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .navbar nav a {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 10px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .navbar nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .navbar nav a:hover::before {
+            left: 100%;
+        }
+        
+        .navbar nav a:hover {
+            border-color: #00ff88;
+            color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .navbar nav a.active {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #0a0a0f;
+            border-color: #00ff88;
+            font-weight: 700;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 15, 0.9));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff88, #00c8ff, #7800ff);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+            border-color: #00ff88;
+            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.2);
+        }
+        
+        .stat-card .icon {
+            font-size: 35px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5));
+        }
+        
+        .stat-card .number {
+            font-family: 'Orbitron', monospace;
+            font-size: 52px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ff88, #00c8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+        
+        .stat-card .label {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 18px;
+            color: #00ff88;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0, 255, 136, 0.5), transparent);
+            margin-left: 20px;
+        }
+        
+        .refresh-btn {
+            font-family: 'Orbitron', monospace;
+            background: transparent;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #00ff88;
+            color: #0a0a0f;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+        
+        .incidents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        
+        .incident-card {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 15, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.4s;
+            position: relative;
+        }
+        
+        .incident-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        
+        .incident-card:hover {
+            transform: translateY(-10px);
+            border-color: #ff4444;
+            box-shadow: 0 20px 40px rgba(255, 68, 68, 0.2);
+        }
+        
+        .incident-card:hover::before {
+            opacity: 1;
+        }
+        
+        .incident-card .image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .incident-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        
+        .incident-card:hover img {
+            transform: scale(1.1);
+        }
+        
+        .incident-card .no-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #1a1a25, #0a0a0f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 50px;
+        }
+        
+        .incident-card .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 68, 68, 0.9);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 3px;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 20px 5px rgba(255, 68, 68, 0.3); }
+        }
+        
+        .incident-card .info {
+            padding: 25px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .incident-card .timestamp {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .incident-card .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .incident-card .detail-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 2px solid #00ff88;
+        }
+        
+        .incident-card .detail-item .label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .incident-card .detail-item .value {
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            color: #00ff88;
+            margin-top: 3px;
+        }
+        
+        .no-incidents {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.5), rgba(10, 10, 15, 0.5));
+            border: 1px dashed rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+        }
+        
+        .no-incidents .icon {
+            font-size: 80px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.3));
+        }
+        
+        .no-incidents h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .no-incidents p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .status-bar .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .status-bar .left {
+            display: flex;
+            align-items: center;
+        }
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .navbar { flex-direction: column; gap: 20px; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>⚡ Littering Detection</h1>
+        <nav>
+            <a href="/" class="active">Dashboard</a>
+            <a href="/incidents">Incidents</a>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">🚨</div>
+                <div class="number" id="total-incidents">0</div>
+                <div class="label">Total Incidents</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📅</div>
+                <div class="number" id="today-incidents">0</div>
+                <div class="label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📸</div>
+                <div class="number" id="total-images">0</div>
+                <div class="label">Images</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🎬</div>
+                <div class="number" id="total-videos">0</div>
+                <div class="label">Videos</div>
+            </div>
+        </div>
+        
+        <div class="section-header">
+            <h2 class="section-title">📋 Recent Incidents</h2>
+            <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+        </div>
+        
+        <div class="incidents-grid" id="incidents-container"></div>
+    </div>
+    
+    <div class="status-bar">
+        <div class="left">
+            <div class="status-dot"></div>
+            <span>System Active • Monitoring</span>
+        </div>
+        <span id="current-time"></span>
+    </div>
+    
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('en-US', {
+                year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        async function loadData() {
+            try {
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                document.getElementById('total-incidents').textContent = stats.total_incidents || 0;
+                document.getElementById('today-incidents').textContent = stats.today_incidents || 0;
+                document.getElementById('total-images').textContent = stats.total_images || 0;
+                document.getElementById('total-videos').textContent = stats.total_videos || 0;
+            } catch (e) {
+                console.error('Stats error:', e);
+            }
+            
+            try {
+                const res = await fetch('/api/incidents');
+                const incidents = await res.json();
+                const container = document.getElementById('incidents-container');
+                
+                if (!incidents || incidents.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-incidents">
+                            <div class="icon">✅</div>
+                            <h3>No Incidents</h3>
+                            <p>System is monitoring for littering activity...</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = incidents.slice(0, 6).map(inc => `
+                    <div class="incident-card">
+                        <div class="image-container">
+                            ${inc.image_path ? 
+                                `<img src="/evidence/images/${inc.image_path}" alt="Evidence">` : 
+                                `<div class="no-image">📷</div>`
+                            }
+                            <div class="status-badge">⚠ Littering</div>
+                        </div>
+                        <div class="info">
+                            <div class="timestamp">📅 ${inc.timestamp || 'Unknown'}</div>
+                            <div class="details">
+                                <div class="detail-item">
+                                    <div class="label">Object</div>
+                                    <div class="value">${inc.garbage_class || 'Unknown'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="label">Confidence</div>
+                                    <div class="value">${(parseFloat(inc.garbage_confidence || 0) * 100).toFixed(0)}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Incidents error:', e);
+            }
+        }
+        
+        loadData();
+        setInterval(loadData, 10000);
+    </script>
+</body>
+</html>

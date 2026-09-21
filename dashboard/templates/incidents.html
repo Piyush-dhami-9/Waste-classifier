@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidents - Littering Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(255, 68, 68, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+        
+        .navbar {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 22px;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .navbar nav { display: flex; gap: 10px; }
+        
+        .navbar nav a {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 10px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        
+        .navbar nav a:hover {
+            border-color: #00ff88;
+            color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .navbar nav a.active {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #0a0a0f;
+            border-color: #00ff88;
+            font-weight: 700;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+            padding-bottom: 100px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .page-header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 32px;
+            background: linear-gradient(135deg, #ff4444, #ff8844);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+        
+        .refresh-btn {
+            font-family: 'Orbitron', monospace;
+            background: transparent;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #00ff88;
+            color: #0a0a0f;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+        
+        .incidents-table {
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.9), rgba(10, 10, 15, 0.9));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .incidents-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .incidents-table th {
+            font-family: 'Orbitron', monospace;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 20px;
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #00ff88;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        }
+        
+        .incidents-table td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+        
+        .incidents-table tr:hover td {
+            background: rgba(0, 255, 136, 0.05);
+        }
+        
+        .thumbnail {
+            width: 120px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .thumbnail:hover {
+            transform: scale(1.1);
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .no-thumb {
+            width: 120px;
+            height: 70px;
+            background: linear-gradient(135deg, #1a1a25, #0a0a0f);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 24px;
+        }
+        
+        .status-badge {
+            font-family: 'Orbitron', monospace;
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #ff4444, #ff2222);
+            color: #fff;
+            animation: glow 2s infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 68, 68, 0.8); }
+        }
+        
+        .object-name {
+            font-family: 'Orbitron', monospace;
+            color: #00c8ff;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        
+        .confidence {
+            font-family: 'Orbitron', monospace;
+            color: #00ff88;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .timestamp {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .evidence-links { display: flex; gap: 10px; }
+        
+        .evidence-links a {
+            font-family: 'Orbitron', monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        
+        .evidence-links a:hover {
+            background: #00ff88;
+            color: #0a0a0f;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .evidence-links a.video {
+            border-color: rgba(0, 200, 255, 0.5);
+            color: #00c8ff;
+        }
+        
+        .evidence-links a.video:hover {
+            background: #00c8ff;
+            color: #0a0a0f;
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.5);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 100px;
+        }
+        
+        .empty-state .icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 30px rgba(0, 255, 136, 0.3));
+        }
+        
+        .empty-state h2 {
+            font-family: 'Orbitron', monospace;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            border: 2px solid #00ff88;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-size: 40px;
+            color: #00ff88;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            transform: scale(1.2);
+            text-shadow: 0 0 20px #00ff88;
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .status-bar .status-dot {
+            width: 8px; height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 10px #00ff88;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .status-bar .left { display: flex; align-items: center; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>⚡ Littering Detection</h1>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/incidents" class="active">Incidents</a>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>🚨 Incident Records</h1>
+            <p>Complete evidence log of all detected littering events</p>
+        </div>
+        
+        <div class="controls">
+            <button class="refresh-btn" onclick="loadIncidents()">⟳ Refresh</button>
+        </div>
+        
+        <div class="incidents-table" id="incidents-container"></div>
+    </div>
+    
+    <div class="modal" id="imageModal" onclick="closeModal()">
+        <span class="modal-close">✕</span>
+        <img id="modalImage" src="" alt="Evidence">
+    </div>
+    
+    <!-- Video Modal -->
+    <div class="modal" id="videoModal">
+        <span class="modal-close" onclick="closeVideoModal()">✕</span>
+        <div class="video-container">
+            <video id="modalVideo" controls autoplay>
+                <source id="videoSource" src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-info">
+                <p>⚠️ If video doesn't play, the codec may not be supported by your browser.</p>
+                <a id="videoDownload" href="" download class="download-btn">📥 Download Video</a>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #modalVideo {
+            max-width: 90%;
+            max-height: 70vh;
+            border-radius: 10px;
+            border: 2px solid #00c8ff;
+            box-shadow: 0 0 50px rgba(0, 200, 255, 0.3);
+        }
+        .video-info {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00c8ff, #0088cc);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.5);
+        }
+    </style>
+    
+    <div class="status-bar">
+        <div class="left">
+            <div class="status-dot"></div>
+            <span>Evidence Database • Active</span>
+        </div>
+        <span id="current-time"></span>
+    </div>
+    
+    <script>
+        function updateTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString('en-US', {
+                year: 'numeric', month: 'short', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        async function loadIncidents() {
+            try {
+                const res = await fetch('/api/incidents');
+                const incidents = await res.json();
+                const container = document.getElementById('incidents-container');
+                
+                if (!incidents || incidents.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <h2>No Incidents</h2>
+                            <p>No littering incidents recorded yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Evidence</th>
+                                <th>Timestamp</th>
+                                <th>Status</th>
+                                <th>Object</th>
+                                <th>Confidence</th>
+                                <th>Files</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                incidents.forEach((inc, i) => {
+                    const conf = (parseFloat(inc.garbage_confidence || 0) * 100).toFixed(0);
+                    const imgPath = inc.image_path ? `/evidence/images/${inc.image_path}` : '';
+                    const vidPath = inc.video_path ? `/evidence/videos/${inc.video_path}` : '';
+                    
+                    html += `
+                        <tr>
+                            <td style="color: rgba(255,255,255,0.3); font-family: Orbitron;">${incidents.length - i}</td>
+                            <td>
+                                ${imgPath ? 
+                                    `<img src="${imgPath}" class="thumbnail" onclick="showImage('${imgPath}')" alt="Evidence">` :
+                                    `<div class="no-thumb">📷</div>`
+                                }
+                            </td>
+                            <td class="timestamp">${inc.timestamp || 'Unknown'}</td>
+                            <td><span class="status-badge">⚠ LITTERING</span></td>
+                            <td class="object-name">${inc.garbage_class || 'Unknown'}</td>
+                            <td class="confidence">${conf}%</td>
+                            <td class="evidence-links">
+                                ${imgPath ? `<a href="${imgPath}" target="_blank">📸 Image</a>` : ''}
+                                ${vidPath ? `<a href="${vidPath}" download class="video">📥 Download Video</a>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error:', e);
+            }
+        }
+        
+        function showImage(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+        
+        function showVideo(src) {
+            document.getElementById('videoSource').src = src;
+            document.getElementById('videoDownload').href = src;
+            document.getElementById('modalVideo').load();
+            document.getElementById('videoModal').classList.add('active');
+        }
+        
+        function closeVideoModal() {
+            document.getElementById('modalVideo').pause();
+            document.getElementById('videoModal').classList.remove('active');
+        }
+        
+        // Close modals on background click
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeVideoModal();
+        });
+        
+        loadIncidents();
+    </script>
+</body>
+</html>
