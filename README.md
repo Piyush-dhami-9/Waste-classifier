@@ -525,7 +525,7 @@ git push origin feature/amazing-feature
 ## 📄 License
 
 ```
-Copyright (c) 2026 Piyush Thakur. All rights reserved.
+Copyright (c) 2026 Piyush Dhami. All rights reserved.
 
 This repository is provided for educational and reference purposes only.
 
